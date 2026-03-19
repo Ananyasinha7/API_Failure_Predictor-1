@@ -1,0 +1,15 @@
+fastapi
+psycopg2
+sqlalchemy
+pydantic
+python-dotenv
+sqlmodel
+uvicorn
+psycopg2-binary
+asyncpg
+pandas
+scikit-learn
+joblib
+#pickle5
+dotenv
+load_dotenv
