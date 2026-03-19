@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: api_failure_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  main-api:
+    build: .
+    environment:
+      SQLALCHEMY_DATABASE_URL: postgresql://postgres:root@postgres:5432/api_failure_db
+      APP_ENV: dev
+      MODEL_PATH: ./models/risk_model.pkl
+      LOG_LEVEL: DEBUG
+      RISK_API_KEY: your-secret-api-key-here
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+
+  scheduler:
+    build: .
+    environment:
+      SQLALCHEMY_DATABASE_URL: postgresql://postgres:root@postgres:5432/api_failure_db
+      APP_ENV: dev
+      MODEL_PATH: ./models/risk_model.pkl
+      LOG_LEVEL: DEBUG
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: python -m backend.pipeline_scheduler
+
+  risk-api:
+    build: .
+    environment:
+      SQLALCHEMY_DATABASE_URL: postgresql://postgres:root@postgres:5432/api_failure_db
+      APP_ENV: dev
+      MODEL_PATH: ./models/risk_model.pkl
+      LOG_LEVEL: DEBUG
+      RISK_API_KEY: your-secret-api-key-here
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: uvicorn ml_backend.risk_api:app --host 0.0.0.0 --port 8001
+
+volumes:
+  postgres_data:

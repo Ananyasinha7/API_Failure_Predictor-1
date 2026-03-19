@@ -117,21 +117,47 @@ curl http://localhost:8001/health
 ## Code Structure
 
 ```
-backend/          Main API + logging + features
-  main.py         FastAPI app
-  logging_middleware.py
-  feature_extraction.py
-  pipeline_scheduler.py
-
-ml_backend/       Training + prediction + serving
-  train_model.py
-  predict_risk.py
-  risk_api.py
-  dataset_builder.py
-  model_utils.py
-
-models/           Trained models
+APIFailure-Predictor/
+├── backend/                    Main API + logging + orchestration
+│   ├── main.py                FastAPI app with startup events
+│   ├── config.py              Environment configuration loader
+│   ├── database.py            SQLAlchemy ORM setup
+│   ├── models.py              Database models (Logs, APIFeatures, RiskScores)
+│   ├── schema.py              Pydantic response schemas
+│   ├── startup_checks.py      Environment validation
+│   ├── logging_config.py       Python logging configuration
+│   ├── logging_middleware.py   Request/response logging middleware
+│   ├── raw_logs.py            File-based logger with rotation
+│   ├── feature_extraction.py   Metrics aggregation (5-min windows)
+│   └── pipeline_scheduler.py   Main orchestrator (extraction → prediction → training)
+│
+├── ml_backend/                Training + prediction + serving
+│   ├── train_model.py         LinearRegression model training
+│   ├── predict_risk.py        Risk score prediction & storage
+│   ├── risk_api.py            FastAPI risk prediction endpoint (port 8001)
+│   ├── dataset_builder.py     Training dataset preparation
+│   ├── model_utils.py         Model I/O, validation, serialization
+│   └── model_initialization.py Auto-generate default model on startup
+│
+├── models/                    Trained model storage
+│   └── risk_model.pkl         Serialized scikit-learn model
+│
+├── logs/                      Application logs
+│
+├── Dockerfile                 Container image definition
+├── docker-compose.yml         Multi-service orchestration
+├── requirements.txt           Python dependencies
+├── .env                       Environment variables (database, API key, etc.)
+├── .gitignore                 Git ignore patterns
+├── applications.md            Real-world use cases (gitignored)
+└── README.md                  This file
 ```
+
+**Key Modules:**
+- **backend.main** - FastAPI entry point with middleware, startup checks, test endpoints
+- **backend.pipeline_scheduler** - Infinite loop orchestrating the entire ML pipeline
+- **ml_backend.risk_api** - Separate FastAPI app serving predictions with authentication
+- **ml_backend.model_utils** - Utilities for model persistence, validation, and normalization
 
 ## Design Decisions
 
@@ -141,6 +167,10 @@ models/           Trained models
 | 5-min windows | Balance responsiveness vs noise |
 | LinearRegression | Fast, interpretable, needs no GPU |
 | Async retraining (24h) | Never blocks predictions, adapts to drift |
+
+## Docker
+
+Run all services with: `docker-compose up -d`. Includes PostgreSQL, Main API (8000), Pipeline Scheduler, and Risk API (8001).
 
 ## Troubleshooting
 
