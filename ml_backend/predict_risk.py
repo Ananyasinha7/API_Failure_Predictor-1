@@ -3,7 +3,7 @@ from backend.models import RiskScores, APIFeatures
 from ml_backend.model_utils import load_model, validate_risk_score
 import logging
 from datetime import datetime
-from ml_backend.train_model import MODEL_VERSION, MODEL_PATH
+from ml_backend.train_model import MODEL_VERSION
 from backend.config import config
 
 logger = logging.getLogger(__name__)

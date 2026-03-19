@@ -13,3 +13,4 @@ joblib
 #pickle5
 dotenv
 load_dotenv
+numpy

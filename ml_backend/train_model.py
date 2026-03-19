@@ -1,13 +1,11 @@
 from ml_backend.dataset_builder import build_training_dataset
 from ml_backend.model_utils import save_model
+from backend.config import config
 from sklearn.linear_model import LinearRegression
 import logging
-import os
 from sklearn.metrics import mean_squared_error, r2_score
 
 MODEL_VERSION = "1.0.0"
-MODEL_DIR = "models"
-MODEL_PATH = os.path.join(MODEL_DIR, f"risk_model_v{MODEL_VERSION}.pkl")
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +42,8 @@ def train_model():
         logger.info(f"Training R2 Score: {r2:.4f}")
         logger.info(f"Training MSE: {mse:.6f}")
 
-        save_model(model, MODEL_PATH)
-        logger.info(f"Model saved successfully to {MODEL_PATH}")
+        save_model(model, config.MODEL_PATH)
+        logger.info(f"Model saved successfully to {config.MODEL_PATH}")
 
     except Exception as e:
         logger.error(f"Error during model training: {e}", exc_info=True)

@@ -6,6 +6,7 @@ import asyncio
 from .config import config
 from .logging_config import setup_logging
 from .startup_checks import check_required_env_vars
+from ml_backend.model_initialization import ensure_model_exists
 
 app=FastAPI()
 setup_logging()
@@ -16,6 +17,7 @@ Base.metadata.create_all(bind=engine)
 @app.on_event("startup")
 async def startup_event():
     check_required_env_vars(["RISK_API_KEY", "APP_ENV", "MODEL_PATH", "SQLALCHEMY_DATABASE_URL"])
+    ensure_model_exists(config.MODEL_PATH)
 
 
 @app.middleware("http") 

@@ -65,3 +65,6 @@ dmypy.json
 
 .claudeignore
 .claude.json
+
+applications.md
+
